@@ -56,6 +56,7 @@ class GCHD {
 		int openDevice(); //At USB level
 		void closeDevice(); //At USB level
 		int getInterface();
+		libusb_device_handle* findDevice(uint16_t vendor, std::string serial);
 		void setupConfiguration();
 		void configureDevice(); //At Device level
 		void uninitDevice();    //At Device level

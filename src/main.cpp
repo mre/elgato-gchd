@@ -39,6 +39,11 @@ void help(std::string name, bool full) {
 		  << "      Set input source to `hdmi`, `component`, `composite` or `auto` (default)" << std::endl
 		  << "      With no input, or multiple input types `auto` may detect incorrectly." << std::endl
 		  << std::endl
+		  << "   -d, -device <device>"  << std::endl
+		  << "      Select device using its serial number." << std::endl
+		  << "      This can be determined using `lsusb -v` for example." << std::endl
+		  << "      With no device id, the first supported device is used." << std::endl
+		  << std::endl
 		  << "   -c, -color-space <color-space>"  << std::endl
 		  << "      Set the input color space to `yuv`, `rgb`, or `auto` (default)." << std::endl
 		  << "      Only has meaning for hdmi and component input." << std::endl
@@ -157,7 +162,7 @@ bool parseNumericResolution( unsigned long &x, unsigned long &y, const std::stri
 		std::string copy=*it;
 		copy=Utility::trim(copy); //Modifies copy
 
-		long value=strtoul( copy.c_str(), &endPtr, 10);
+		long value = strtoul( copy.c_str(), &endPtr, 10);
 
 		if( *endPtr != 0 ) {
 			return false;
@@ -174,6 +179,7 @@ bool parseNumericResolution( unsigned long &x, unsigned long &y, const std::stri
 
 enum class Args:int {
 	INPUT_SOURCE=1,
+	DEVICE,
 	COLOR_SPACE,
 	INPUT_RESOLUTION,
 	INPUT_SCAN_INTERLACED,
@@ -239,6 +245,8 @@ int main(int argc, char *argv[]) {
 	struct option longOpts[]={
 	{"i", required_argument, NULL, (int)Args::INPUT_SOURCE},
 	{"input", required_argument, NULL, (int)Args::INPUT_SOURCE},
+	{"d", required_argument, NULL, (int)Args::DEVICE},
+	{"device", required_argument, NULL, (int)Args::DEVICE},
 	{"c", required_argument, NULL, (int)Args::COLOR_SPACE},
 	{"color-space", required_argument, NULL, (int)Args::COLOR_SPACE},
 	{"ir", required_argument, NULL, (int)Args::INPUT_RESOLUTION},
@@ -341,6 +349,11 @@ int main(int argc, char *argv[]) {
 						parameter_unknown(process.getName(), argv[currentOptionIndex], arguments);
 						return EXIT_FAILURE;
 					}
+					break;
+				}
+				case Args::DEVICE: {
+					std::string serial = std::string(optarg);
+					inputSettings.setDevice(serial);
 					break;
 				}
 				case Args::COLOR_SPACE: {

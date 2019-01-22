@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cstring>
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -63,7 +64,6 @@ int GCHD::init() {
 
 	// configure device
 	setupConfiguration();
-
 	return 0;
 }
 
@@ -132,6 +132,46 @@ int GCHD::checkFirmware() {
 	return 1;
 }
 
+libusb_device_handle* GCHD::findDevice(uint16_t vendor, std::string serial) {
+	libusb_device** device_list = NULL;
+	libusb_device_handle* dev_handle = NULL;
+ 
+	ssize_t count = 0;
+	count = libusb_get_device_list(nullptr, &device_list);
+
+	for (ssize_t i = 0; i < count; i++) {
+		libusb_device* device = device_list[i];
+		struct libusb_device_descriptor desc;
+		int ret = libusb_get_device_descriptor(device, &desc);
+		if (ret != 0) {
+			break;
+		}
+
+		if (desc.idVendor != vendor) {
+			continue;
+		}
+
+		// Yay! We found an Elgato device!
+
+		if(libusb_open(device, &dev_handle)) {
+			libusb_free_device_list(device_list, 1);
+			return NULL;
+		}
+
+		if (desc.iSerialNumber) {
+			char actual_serial[sizeof(serial)];
+			ret = libusb_get_string_descriptor_ascii(dev_handle, desc.iSerialNumber, (unsigned char*)  actual_serial, sizeof(serial));
+			if (ret > 0) {
+				if (serial.compare(actual_serial) == 0) {
+					break;
+				}
+			}
+		}
+	}
+	libusb_free_device_list(device_list, 1);
+	return dev_handle;
+}
+
 int GCHD::openDevice() {
 	libusb_ = libusb_init(nullptr);
 
@@ -142,6 +182,18 @@ int GCHD::openDevice() {
 
 	// uncomment for verbose debugging
 	//libusb_set_debug(nullptr, LIBUSB_LOG_LEVEL_DEBUG);
+
+	std::string serial = currentInputSettings_.getDevice();
+	if (!serial.empty()) {
+		devh_ = GCHD::findDevice(VENDOR_ELGATO, serial);
+		if (devh_) {
+			deviceType_ = DeviceType::GameCaptureHD;
+			return 0;
+		} else {
+			std::cerr << "Cannot find device with serial number" << std::endl;
+			return 1;
+		}
+	}
 
 	devh_ = libusb_open_device_with_vid_pid(nullptr, VENDOR_ELGATO, GAME_CAPTURE_HD_0);
 	if (devh_) {

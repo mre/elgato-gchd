@@ -78,6 +78,14 @@ void InputSettings::setSource(InputSource inputSource) {
 	source_ = inputSource;
 }
 
+std::string InputSettings::getDevice() {
+	return serial_;
+}
+
+void InputSettings::setDevice(std::string serial) {
+	serial_ = serial;
+}
+
 Resolution InputSettings::getResolution() {
 	return resolution_;
 }

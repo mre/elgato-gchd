@@ -78,6 +78,9 @@ class InputSettings {
 		InputSource getSource();
 		void setSource(InputSource inputSource);
 
+		std::string getDevice();
+		void setDevice(std::string serial);
+
 		Resolution getResolution();
 		void getResolution(unsigned &horizontal, unsigned &vertical);
 		void setResolution(Resolution resolution);
@@ -112,6 +115,7 @@ class InputSettings {
 		void checkRefresh( double value, const char *string );
 
 		InputSource source_;
+		std::string serial_;
 		Resolution resolution_;
 		ScanMode scanMode_;
 		double refreshRate_;

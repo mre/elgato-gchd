@@ -96,6 +96,11 @@ Input Options:
 Set input source to `hdmi`, `component`, `composite` or `auto` (default)
 With no input, or multiple input types `auto` may detect incorrectly.
 
+-d, -device <device>
+Set device id. This can be determined using lsusb for example.
+This can be determined using `lsusb -v` for example.
+With no device id, the first supported device is used.
+
 -c, -color-space <color-space>
 Set the input color space to `yuv`, `rgb`, or `auto` (default).
 Only has meaning for hdmi and component input.
